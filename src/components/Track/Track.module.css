@@ -1,0 +1,14 @@
+.track {
+    padding: 12px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.trackName {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.trackInfo {
+    font-size: 14px;
+    color: #888;
+}
