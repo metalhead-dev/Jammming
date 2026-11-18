@@ -10,7 +10,7 @@ function Playlist() {
         defaultValue="My Playlist"
       />
 
-      <Tracklist />
+      <Tracklist tracks={[]} />
 
       <button className={styles.saveButton}>
         Save To Spotify

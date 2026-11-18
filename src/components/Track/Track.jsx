@@ -1,12 +1,14 @@
-import stryles from './Track.module.css';
+import styles from './Track.module.css';
 
-function Track() {
-    return (
-        <div className={stryles.track}>
-            <h3 className={stryles.trackName}>The Empty Hourglass</h3>
-            <p className={stryles.trackInfo}>Architects | All Our Gods Have Abandoned Us</p>
-        </div>
-    );
+function Track({ track }) {
+  return (
+    <div className={styles.track}>
+      <h3 className={styles.trackName}>{track.name}</h3>
+      <p className={styles.trackInfo}>
+        {track.artist} | {track.album}
+      </p>
+    </div>
+  );
 }
 
 export default Track;
