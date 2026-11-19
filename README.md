@@ -5,7 +5,7 @@ Jammming is a React application that allows users to search for music, build cus
 
 ## Screenshot
 
-![Jammming application](screenshots/jammming.png)
+![Jammming application](screenshots/app-screenshot.png)
 
 ## Features
 
