@@ -1,16 +1,70 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+# 🎵 Jammming
 
-Currently, two official plugins are available:
+Jammming is a React application that allows users to search for music, build custom playlists, and save them directly to Spotify.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Screenshot
 
-## React Compiler
+![Jammming application](screenshots/jammming.png)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the Oxlint configuration
+- Search for tracks using the Spotify Web API
+- View song titles, artists, and albums
+- Add and remove tracks from playlists
+- Prevent duplicate tracks
+- Rename playlists
+- Save playlists to Spotify
+- Authenticate with Spotify using Authorization Code with PKCE
+- Automatically refresh Spotify access tokens
+- Restore authentication after refreshing the page
+- Responsive design with custom-styled buttons
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Technologies
+
+- React
+- JavaScript
+- CSS Modules
+- Vite
+- Spotify Web API
+
+## Getting Started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Start the application
+
+```bash
+npm run dev
+```
+
+### 3. Open Jammming
+
+Open http://127.0.0.1:5173/ in your browser.
+
+### 4. Connect to Spotify
+
+Click **Login With Spotify** and authorize the application.
+
+Note: Spotify authentication requires a Spotify Developer application with the correct Client ID and redirect URI. Spotify API access may also depend on the app's development-mode permissions and account eligibility.
+
+## Testing
+
+The following features were tested successfully:
+
+- Empty playlist validation
+- Empty search queries
+- Multiple consecutive searches
+- Adding and removing tracks
+- Duplicate prevention
+- Saving playlists to Spotify
+- Restoring Spotify authentication after page refresh
+- Automatic access token refresh
+
+## Project Background
+
+This project was created as part of the Codecademy Front-End Engineer learning path.
