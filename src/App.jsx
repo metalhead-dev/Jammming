@@ -9,6 +9,7 @@ import styles from './App.module.css';
 import {
   loginWithSpotify,
   getAccessToken,
+  refreshAccessToken,
   searchSpotify,
   createSpotifyPlaylist,
   addTracksToPlaylist
@@ -18,69 +19,117 @@ import {
 let authorizationPromise = null;
 
 function App() {
-  const [searchResults, setSearchResults] = useState([
-    {
-      id: 1,
-      name: 'The Empty Hourglass',
-      artist: 'Architects',
-      album: 'All Our Gods Have Abandoned Us',
-    },
-    {
-      id: 2,
-      name: 'An Open Letter to Myself',
-      artist: 'Architects',
-      album: 'All Our Gods Have Abandoned Us',
-    },
-    {
-      id: 3,
-      name: 'Doomsday',
-      artist: 'Architects',
-      album: 'All Our Gods Have Abandoned Us',
-    },
-  ]);
-
+  const [searchResults, setSearchResults] = useState([]);
   const [accessToken, setAccessToken] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const [playlistName, setPlaylistName] = useState('My Playlist');
   const [playlistTracks, setPlaylistTracks] = useState([]);
-
   const [saveMessage, setSaveMessage] = useState('');
 
-  // Получаем токен после авторизации Spotify
+  // Восстанавливаем авторизацию после обновления страницы
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
+    let active = true;
 
-    if (!code) {
-      return;
-    }
+    async function initializeSpotify() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
 
-    // Убираем одноразовый код из адресной строки
-    window.history.replaceState(
-      {},
-      '',
-      window.location.pathname
-    );
-
-    // Не обмениваем один и тот же код повторно
-    if (!authorizationPromise) {
-      authorizationPromise = getAccessToken(code);
-    }
-
-    async function handleSpotifyCallback() {
       try {
-        const token = await authorizationPromise;
+        if (code) {
+          window.history.replaceState(
+            {},
+            '',
+            window.location.pathname
+          );
 
-        setAccessToken(token);
+          if (!authorizationPromise) {
+            authorizationPromise = getAccessToken(code);
+          }
 
-        console.log('Spotify authorization successful!');
+          const token = await authorizationPromise;
+
+          if (active) {
+            setAccessToken(token);
+            console.log('Spotify authorization successful!');
+          }
+        } else {
+          const refreshToken = sessionStorage.getItem(
+            'spotify_refresh_token'
+          );
+
+          if (refreshToken) {
+            const token = await refreshAccessToken();
+
+            if (active) {
+              setAccessToken(token);
+              console.log('Spotify session restored!');
+            }
+          }
+        }
       } catch (error) {
         console.error('Spotify authorization failed:', error);
+      } finally {
+        if (active) {
+          setAuthLoading(false);
+        }
       }
     }
 
-    handleSpotifyCallback();
+    initializeSpotify();
+
+    return () => {
+      active = false;
+    };
   }, []);
+
+  // Автоматически обновляем access token до истечения срока действия
+  useEffect(() => {
+    if (!accessToken) {
+      return;
+    }
+
+    let active = true;
+    let refreshTimer;
+
+    async function updateToken() {
+      try {
+        const newToken = await refreshAccessToken();
+
+        if (active) {
+          setAccessToken(newToken);
+          console.log('Spotify access token refreshed!');
+        }
+      } catch (error) {
+        console.error('Automatic token refresh failed:', error);
+
+        if (active) {
+          setAccessToken(null);
+        }
+      }
+    }
+
+    const expiresAt = Number(
+      sessionStorage.getItem('spotify_token_expires_at')
+    );
+
+    if (!expiresAt || !Number.isFinite(expiresAt)) {
+      return;
+    }
+
+    // Обновляем токен за минуту до истечения
+    const refreshDelay = Math.max(
+  expiresAt - Date.now() - 60 * 1000,
+  0);
+
+    refreshTimer = setTimeout(updateToken, refreshDelay);
+
+    return () => {
+      active = false;
+      clearTimeout(refreshTimer);
+    };
+  }, [accessToken]);
+
 
   // Поиск песен через Spotify API
   async function handleSearch(searchTerm) {
@@ -90,106 +139,100 @@ function App() {
     }
 
     try {
-      const tracks = await searchSpotify(
-        searchTerm,
-        accessToken
-      );
-
+      const tracks = await searchSpotify(searchTerm, accessToken);
       setSearchResults(tracks);
-
       console.log('Spotify search results:', tracks);
     } catch (error) {
       console.error('Spotify search failed:', error);
     }
   }
 
+  function addTrack(track) {
+    setPlaylistTracks((prevTracks) => {
+      const trackExists = prevTracks.some(
+        (savedTrack) => savedTrack.id === track.id
+      );
 
-function addTrack(track) {
-  setPlaylistTracks((prevTracks) => {
-    const trackExists = prevTracks.some(
-      (savedTrack) => savedTrack.id === track.id
+      if (trackExists) {
+        return prevTracks;
+      }
+
+      return [...prevTracks, track];
+    });
+  }
+
+  function removeTrack(track) {
+    setPlaylistTracks((prevTracks) =>
+      prevTracks.filter((savedTrack) => savedTrack.id !== track.id)
     );
+  }
 
-    if (trackExists) {
-      return prevTracks;
+  async function savePlaylist(name) {
+    setSaveMessage('');
+
+    if (playlistTracks.length === 0) {
+      setSaveMessage('Please add some tracks to your playlist.');
+      return;
     }
 
-    return [...prevTracks, track];
-  });
-}
+    const trackUris = playlistTracks
+      .map((track) => track.uri)
+      .filter(Boolean);
 
-function removeTrack(track) {
-  setPlaylistTracks((prevTracks) =>
-    prevTracks.filter((savedTrack) => savedTrack.id !== track.id)
-  );
-}
+    if (!accessToken) {
+      setSaveMessage('Please log in to Spotify first.');
+      return;
+    }
 
+    if (trackUris.length === 0) {
+      setSaveMessage('No Spotify tracks to save.');
+      return;
+    }
 
-async function savePlaylist(playlistName) {
-  setSaveMessage('');
-  
-  if (playlistTracks.length === 0) {
-  setSaveMessage('Please add some tracks to your playlist.');
-  return;
-}
-  const trackUris = playlistTracks
-    .map((track) => track.uri)
-    .filter(Boolean);
+    try {
+      const playlistId = await createSpotifyPlaylist(
+        name,
+        accessToken
+      );
 
-  if (!accessToken) {
-  setSaveMessage('Please log in to Spotify first.');
-  return;
-}
+      await addTracksToPlaylist(
+        playlistId,
+        trackUris,
+        accessToken
+      );
 
-  if (trackUris.length === 0) {
-  setSaveMessage('No Spotify tracks to save.');
-  return;
-}
-
-  try {
-    const playlistId = await createSpotifyPlaylist(
-      playlistName,
-      accessToken
-    );
-
-    await addTracksToPlaylist(
-      playlistId,
-      trackUris,
-      accessToken
-    );
-    setPlaylistTracks([]);
-    setSaveMessage('Playlist saved successfully!');
-  }  catch (error) {
-  console.error('Failed to save playlist:', error);
-
-  setSaveMessage(
-    'Failed to save playlist. Please try again later.'
-  );
-}
-}
+      setPlaylistTracks([]);
+      setSaveMessage('Playlist saved successfully!');
+    } catch (error) {
+      console.error('Failed to save playlist:', error);
+      setSaveMessage(
+        'Failed to save playlist. Please try again later.'
+      );
+    }
+  }
 
   return (
     <div className={styles.app}>
       <h1>Jammming</h1>
 
-         
-<div className={styles.loginContainer}>
-  {accessToken ? (
-    <div
-      className={styles.spotifyConnected}
-      role="status"
-    >
-      ✓ Connected to Spotify
-    </div>
-  ) : (
-    <button
-      className={styles.spotifyLoginButton}
-      onClick={loginWithSpotify}
-    >
-      Login With Spotify
-    </button>
-  )}
-</div>
+      <div className={styles.loginContainer}>
+        {authLoading ? (
+          <div className={styles.spotifyConnected} role="status">
+            Connecting to Spotify...
+          </div>
+        ) : accessToken ? (
+          <div className={styles.spotifyConnected} role="status">
+            ✓ Connected to Spotify
+          </div>
+        ) : (
+          <button
+            className={styles.spotifyLoginButton}
+            onClick={loginWithSpotify}
+          >
+            Login With Spotify
+          </button>
+        )}
+      </div>
 
       <SearchBar onSearch={handleSearch} />
 
@@ -198,16 +241,18 @@ async function savePlaylist(playlistName) {
           searchResults={searchResults}
           onAdd={addTrack}
         />
-        <Playlist 
-        playlistName={playlistName}
-        onNameChange={setPlaylistName}
-        playlistTracks={playlistTracks}
-        onRemove={removeTrack}
-        onSave={savePlaylist}
+
+        <Playlist
+          playlistName={playlistName}
+          onNameChange={setPlaylistName}
+          playlistTracks={playlistTracks}
+          onRemove={removeTrack}
+          onSave={savePlaylist}
         />
+
         {saveMessage && (
-  <p role="status">{saveMessage}</p>
-)}
+          <p role="status">{saveMessage}</p>
+        )}
       </div>
     </div>
   );

@@ -89,10 +89,17 @@ export async function getAccessToken(code) {
   sessionStorage.removeItem('code_verifier');
 
   if (data.refresh_token) {
-    sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
-  }
+  sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
+}
 
-  return data.access_token;
+const expiresAt = Date.now() + data.expires_in * 1000;
+
+sessionStorage.setItem(
+  'spotify_token_expires_at',
+  String(expiresAt)
+);
+
+return data.access_token;
 }
 
 // Refresh expired Spotify access token
@@ -129,10 +136,17 @@ export async function refreshAccessToken() {
   const data = await response.json();
 
   if (data.refresh_token) {
-    sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
-  }
+  sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
+}
 
-  return data.access_token;
+const expiresAt = Date.now() + data.expires_in * 1000;
+
+sessionStorage.setItem(
+  'spotify_token_expires_at',
+  String(expiresAt)
+);
+
+return data.access_token;
 }
 
 // Search tracks on Spotify

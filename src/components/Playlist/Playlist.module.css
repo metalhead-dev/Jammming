@@ -1,37 +1,51 @@
+
 .playlist {
   background-color: #302943;
   padding: 20px;
   border-radius: 10px;
-  width: 400px;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
   color: white;
 }
 
 .playlistName {
+  display: block;
   width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
+  height: 48px;
+  padding: 0 10px;
+  margin: 0 0 20px;
   font-size: 20px;
+  font-family: inherit;
+  font-weight: 600;
   color: white;
   background: transparent;
   border: none;
   border-bottom: 1px solid #aaa;
+  border-radius: 0;
   box-sizing: border-box;
 }
 
+.playlistName:focus {
+  outline: none;
+  border-bottom-color: #9678e8;
+}
+
 .saveButton {
-    display: block;
-    margin: 25px auto 0;
-    padding: 12px 24px;
-    background-color: #7b5cd6;
-    color: white;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
+  display: block;
+  margin: 25px auto 0;
+  padding: 12px 24px;
+  background-color: #7b5cd6;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
 }
 
 .saveButton:hover {
-    background-color: #9678e8;
+  background-color: #9678e8;
 }
 
+.saveButton:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
