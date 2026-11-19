@@ -1,3 +1,4 @@
+
 .app {
   min-height: 100vh;
   padding: 40px 20px;
@@ -9,8 +10,47 @@
 .app h1 {
   text-align: center;
   font-size: 48px;
+  margin-bottom: 20px;
+}
+
+/* Spotify login button container */
+
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 30px;
 }
+
+/* Spotify login button */
+
+.spotifyLoginButton {
+  background-color: #1db954;
+  color: #ffffff;
+  border: none;
+  border-radius: 30px;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spotifyLoginButton:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+
+.spotifyLoginButton:active {
+  transform: scale(0.98);
+}
+
+.spotifyLoginButton:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 4px;
+}
+
+/* Search results and playlist */
 
 .container {
   display: flex;
@@ -18,4 +58,20 @@
   align-items: flex-start;
   gap: 30px;
   flex-wrap: wrap;
+}
+
+
+/* Spotify connected status */
+
+.spotifyConnected {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #173c2a;
+  color: #1db954;
+  border: 1px solid #1db954;
+  border-radius: 30px;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 700;
 }

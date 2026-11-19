@@ -1,10 +1,14 @@
 
 import Tracklist from '../Tracklist/Tracklist';
 import styles from './Playlist.module.css';
-import { useState } from 'react';
 
-function Playlist({ playlistTracks, onRemove, onSave }) {
-  const [playlistName, setPlaylistName] = useState('My Playlist');
+function Playlist({
+  playlistName,
+  onNameChange,
+  playlistTracks,
+  onRemove,
+  onSave
+}) {
 
   function handleSave() {
     if (playlistName.trim() === '') {
@@ -20,7 +24,9 @@ function Playlist({ playlistTracks, onRemove, onSave }) {
         className={styles.playlistName}
         type="text"
         value={playlistName}
-        onChange={(event) => setPlaylistName(event.target.value)}
+        onChange={(event) =>
+          onNameChange(event.target.value)
+        }
       />
 
       <Tracklist

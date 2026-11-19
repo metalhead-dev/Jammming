@@ -41,6 +41,7 @@ function App() {
 
   const [accessToken, setAccessToken] = useState(null);
 
+  const [playlistName, setPlaylistName] = useState('My Playlist');
   const [playlistTracks, setPlaylistTracks] = useState([]);
 
   const [saveMessage, setSaveMessage] = useState('');
@@ -171,9 +172,24 @@ async function savePlaylist(playlistName) {
     <div className={styles.app}>
       <h1>Jammming</h1>
 
-      <button onClick={loginWithSpotify}>
-        Login With Spotify
-      </button>
+         
+<div className={styles.loginContainer}>
+  {accessToken ? (
+    <div
+      className={styles.spotifyConnected}
+      role="status"
+    >
+      ✓ Connected to Spotify
+    </div>
+  ) : (
+    <button
+      className={styles.spotifyLoginButton}
+      onClick={loginWithSpotify}
+    >
+      Login With Spotify
+    </button>
+  )}
+</div>
 
       <SearchBar onSearch={handleSearch} />
 
@@ -183,6 +199,8 @@ async function savePlaylist(playlistName) {
           onAdd={addTrack}
         />
         <Playlist 
+        playlistName={playlistName}
+        onNameChange={setPlaylistName}
         playlistTracks={playlistTracks}
         onRemove={removeTrack}
         onSave={savePlaylist}
